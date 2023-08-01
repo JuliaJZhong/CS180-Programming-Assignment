@@ -29,18 +29,26 @@ def print_tile_data(tile_types, tile_values):
 # all D +
 # all H and D +
 # protector token +?
-# the other token
+# the other token +?
 
 # tautology: go right or down
 # subproblems: coords, protector (have or not), multiplier (have or not)
 
 def DP(n, H, tile_types, tile_values, memo):
+    
+    if n == 0 or n == 1:
+        return True
+
     # if it works for going right first, don't even bother solving the way going down
     # if I want best path, then can easily change this
-    return (DPhelper(n, H, tile_types, tile_values, 0, 1, 0, 0, memo) >= 0) or (DPhelper(n, H, tile_types, tile_values, 1, 0, 0, 0, memo) >= 0)
+    return (H + DPhelper(n, H, tile_types, tile_values, 0, 1, 0, 0, memo) >= 0) or (H + DPhelper(n, H, tile_types, tile_values, 1, 0, 0, 0, memo) >= 0)
 
 def DPhelper(n, H, tile_types, tile_values, row, col, protector, multiplier, memo):
 
+    # you died.
+    if H < 0:
+        return -np.Inf
+    
     # out of bounds
     if row >= n or col >= n:
         return -np.Inf
@@ -69,8 +77,8 @@ def DPhelper(n, H, tile_types, tile_values, row, col, protector, multiplier, mem
         return memo[row][col][protector][multiplier]
     
     # no tokens used on current tile
-    go_right = DPhelper(n, H, tile_types, tile_values, row, col + 1, protector, multiplier, memo) + net_H
-    go_down = DPhelper(n, H, tile_types, tile_values, row + 1, col, protector, multiplier, memo) + net_H
+    go_right = DPhelper(n, H + net_H, tile_types, tile_values, row, col + 1, protector, multiplier, memo) + net_H
+    go_down = DPhelper(n, H + net_H, tile_types, tile_values, row + 1, col, protector, multiplier, memo) + net_H
 
     # current tile is damage type, we have protector, and we use it
     if protector and curr_type == 0:
@@ -82,8 +90,8 @@ def DPhelper(n, H, tile_types, tile_values, row, col, protector, multiplier, mem
 
     # current tile is healing type, we have multiplier, and we use it
     if multiplier and curr_type == 1:
-        mult_then_right = DPhelper(n, H, tile_types, tile_values, row, col + 1, protector, 0, memo) + net_H * 2
-        mult_then_down = DPhelper(n, H, tile_types, tile_values, row + 1, col, protector, 0, memo) + net_H * 2
+        mult_then_right = DPhelper(n, H + 2 * net_H, tile_types, tile_values, row, col + 1, protector, 0, memo) + net_H * 2
+        mult_then_down = DPhelper(n, H + 2 * net_H, tile_types, tile_values, row + 1, col, protector, 0, memo) + net_H * 2
 
         go_right = max(go_right, mult_then_right)
         go_down = max(go_down, mult_then_down)
@@ -107,7 +115,7 @@ def main(input_file_name):
     print("Result: " + str(result))
     output_file_name = input_file_name.replace(".txt", "_out.txt")
     write_output_file(output_file_name, result)
-    print(memo)
+    # print(memo)
 
 
 if __name__ == "__main__":
