@@ -25,7 +25,6 @@ def print_tile_data(tile_types, tile_values):
     print(tile_values)
 
 # idea: store the min amount of health needed to get from a spot to the end alive
-# TODO protector, multiplier, both
 
 def DP(n, H, tile_types, tile_values, memo):
 
